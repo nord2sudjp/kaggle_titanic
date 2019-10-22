@@ -1,0 +1,178 @@
+# https://www.kaggle.com/tushar786/titanic-how-i-scored-above-80-vis-feature-engg
+このサイトは多いので直接参照する。
+ax = sns.boxplot("Embarked","Fare", palette='rainbow', hue='Pclass',data=train)
+plt.show()
+
+
+# https://www.kaggle.com/omarelgabry/a-journey-through-titanic?scriptVersionId=447794
+このサイトも直接参照
+sns.factorplot('Embarked',data=titanic_df,kind='count',order=['S','C','Q'],ax=axis1)
+sns.factorplot('Survived',hue="Embarked",data=titanic_df,kind='count',order=[1,0],ax=axis2)
+sns.countplot(x='Embarked', data=titanic_df, ax=axis1)
+sns.countplot(x='Survived', hue="Embarked", data=titanic_df, order=[1,0], ax=axis2)
+
+# group by embarked, and get the mean for survived passengers for each value in Embarked
+embark_perc = titanic_df[["Embarked", "Survived"]].groupby(['Embarked'],as_index=False).mean()
+sns.barplot(x='Embarked', y='Survived', data=embark_perc,order=['S','C','Q'],ax=axis3)
+
+
+
+# https://datascienceplus.com/would-you-survive-the-titanic-getting-started-in-python/
+categ =  [ 'Pclass', 'Sex', 'SibSp', 'Parch', 'Embarked']
+conti = ['Fare', 'Age']
+
+#Distribution
+fig = plt.figure(figsize=(30, 10))
+for i in range (0,len(categ)):
+    fig.add_subplot(3,3,i+1)
+    sns.countplot(x=categ[i], data=d_train);  
+
+for col in conti:
+    fig.add_subplot(3,3,i + 2)
+    sns.distplot(d_train[col].dropna());
+    i += 1
+    
+plt.show()
+fig.clear()
+
+
+fig = plt.figure(figsize=(30, 10))
+i = 1
+for col in categ:
+    if col != 'Survived':
+        fig.add_subplot(3,3,i)
+        sns.countplot(x=col, data=TitanicTrain,hue='Survived');
+        i += 1
+
+# Box plot survived x age
+fig.add_subplot(3,3,6)
+sns.swarmplot(x="Survived", y="Age", hue="Sex", data=TitanicTrain);
+fig.add_subplot(3,3,7)
+sns.boxplot(x="Survived", y="Age", data=TitanicTrain)
+
+# fare and Survived
+fig.add_subplot(3,3,8)
+sns.violinplot(x="Survived", y="Fare", data=TitanicTrain)
+
+# correlations with the new features
+corr = TitanicTrain.drop(['PassengerId'], axis=1).corr()
+mask = np.zeros_like(corr, dtype=np.bool)
+mask[np.triu_indices_from(mask)] = True
+cmap = sns.diverging_palette(220, 10, as_cmap=True)
+fig.add_subplot(3,3,9)
+sns.heatmap(corr, mask=mask, cmap=cmap, cbar_kws={"shrink": .5})
+plt.show()
+fig.clear()
+
+# https://ahmedbesbes.com/how-to-score-08134-in-titanic-kaggle-challenge.html
+data['Died'] = 1 - data['Survived']
+data.groupby('Sex').agg('sum')[['Survived', 'Died']].plot(kind='bar', figsize=(25, 7),
+                                                          stacked=True, colors=['g', 'r']);
+data.groupby('Sex').agg('mean')[['Survived', 'Died']].plot(kind='bar', figsize=(25, 7), 
+                                                           stacked=True, colors=['g', 'r']);
+
+fig = plt.figure(figsize=(25, 7))
+sns.violinplot(x='Sex', y='Age', 
+               hue='Survived', data=data, 
+               split=True,
+               palette={0: "r", 1: "g"}
+              );
+              
+figure = plt.figure(figsize=(25, 7))
+plt.hist([data[data['Survived'] == 1]['Fare'], data[data['Survived'] == 0]['Fare']], 
+         stacked=True, color = ['g','r'],
+         bins = 50, label = ['Survived','Dead'])
+plt.xlabel('Fare')
+plt.ylabel('Number of passengers')
+plt.legend();
+
+plt.figure(figsize=(25, 7))
+ax = plt.subplot()
+
+ax.scatter(data[data['Survived'] == 1]['Age'], data[data['Survived'] == 1]['Fare'], 
+           c='green', s=data[data['Survived'] == 1]['Fare'])
+ax.scatter(data[data['Survived'] == 0]['Age'], data[data['Survived'] == 0]['Fare'], 
+           c='red', s=data[data['Survived'] == 0]['Fare']);
+           
+ax = plt.subplot()
+ax.set_ylabel('Average fare')
+data.groupby('Pclass').mean()['Fare'].plot(kind='bar', figsize=(25, 7), ax = ax);
+
+fig = plt.figure(figsize=(25, 7))
+sns.violinplot(x='Embarked', y='Fare', hue='Survived', data=data, split=True, palette={0: "r", 1: "g"});
+
+# https://www.kaggle.com/lperez/titanic-a-deeper-look-on-family-size
+for dataset in full_data:
+    dataset['FamilySize'] = dataset['SibSp'] + dataset['Parch'] + 1
+    
+pd.crosstab(train['FamilySize'], train['Survived']).plot(kind='bar', stacked=True, title="Survived by family size")
+pd.crosstab(train['FamilySize'], train['Survived'], normalize='index').plot(kind='bar', stacked=True, title="Survived by family size (%)")
+
+# https://www.kaggle.com/yassineghouzam/titanic-top-4-with-ensemble-modeling
+g = sns.heatmap(train[["Survived","SibSp","Parch","Age","Fare"]].corr(),annot=True, fmt = ".2f", cmap = "coolwarm")
+
+g = sns.factorplot(x="SibSp",y="Survived",data=train,kind="bar", size = 6 , 
+palette = "muted")
+g.despine(left=True)
+g = g.set_ylabels("survival probability")
+
+# Explore Age vs Survived
+g = sns.FacetGrid(train, col='Survived')
+g = g.map(sns.distplot, "Age")
+
+# Explore Age distibution 
+g = sns.kdeplot(train["Age"][(train["Survived"] == 0) & (train["Age"].notnull())], color="Red", shade = True)
+g = sns.kdeplot(train["Age"][(train["Survived"] == 1) & (train["Age"].notnull())], ax =g, color="Blue", shade= True)
+g.set_xlabel("Age")
+g.set_ylabel("Frequency")
+g = g.legend(["Not Survived","Survived"])
+
+g = sns.distplot(dataset["Fare"], color="m", label="Skewness : %.2f"%(dataset["Fare"].skew()))
+g = g.legend(loc="best")
+
+g = sns.distplot(dataset["Fare"], color="b", label="Skewness : %.2f"%(dataset["Fare"].skew()))
+g = g.legend(loc="best")
+
+g = sns.barplot(x="Sex",y="Survived",data=train)
+g = g.set_ylabel("Survival Probability")
+
+# Explore Embarked vs Survived 
+g = sns.factorplot(x="Embarked", y="Survived",  data=train,
+                   size=6, kind="bar", palette="muted")
+g.despine(left=True)
+g = g.set_ylabels("survival probability")
+
+# https://www.kaggle.com/jamesleslie/titanic-random-forrest-use-title-to-impute-age
+sns.barplot(x='Title', y='Age', data=data_df, estimator=np.median, ci=None, palette='Blues_d')
+plt.xticks(rotation=45)
+plt.show()
+
+
+sns.countplot(x='Title', data=data_df.iloc[:891,:], palette='hls', hue='Survived')
+plt.xticks(rotation=45)
+plt.show()
+
+# https://qiita.com/suzumi/items/8ce18bc90c942663d1e6
+split_data = []
+for survived in [0,1]:
+    split_data.append(df[df.Survived==survived])
+
+temp = [i["Pclass"].dropna() for i in split_data]
+plt.hist(temp, histtype="barstacked", bins=3)
+
+temp = [i["Age"].dropna() for i in split_data]
+plt.hist(temp, histtype="barstacked", bins=16)
+
+#! 年齢を平均で追加した後にグラフで表示→中央の人が多すぎる
+
+# https://www.kaggle.com/zhenqiliu/titanic-survival-python-solution
+titanic_df['title'] = titanic_df['Name'].apply(get_title).apply(title_map)   
+test_df['title'] = test_df['Name'].apply(get_title).apply(title_map)
+title_xt = pd.crosstab(titanic_df['title'], titanic_df['Survived'])
+title_xt_pct = title_xt.div(title_xt.sum(1).astype(float), axis=0)
+
+title_xt_pct.plot(kind='bar', 
+                  stacked=True, 
+                  title='Survival Rate by title')
+plt.xlabel('title')
+plt.ylabel('Survival Rate')
