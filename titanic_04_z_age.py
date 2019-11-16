@@ -22,4 +22,3 @@ d_train_g_m = d_train_g_m.reset_index()[['Sex', 'Pclass', 'title', 'FamilySize',
 d_train['Age'] = d_train.apply(lambda row: fill_age(row) if np.isnan(row['Age']) else row['Age'], axis=1)
 
 d_train['Age'].hist(bins=70)
-

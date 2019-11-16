@@ -79,6 +79,14 @@ dataset['FamilySize'] = dataset['SibSp'] + dataset['Parch'] + 1
 pd.crosstab(train['FamilySize'], train['Survived']).plot(kind='bar', stacked=True, title="Survived by family size")
 pd.crosstab(train['FamilySize'], train['Survived'], normalize='index').plot(kind='bar', stacked=True, title="Survived by family size (%)")
 
+
+# https://www.kaggle.com/omarelgabry/a-journey-through-titanic?scriptVersionId=447794
+person_dummies_titanic  = pd.get_dummies(d_train['Person'])
+person_dummies_titanic.columns = ['Female','Male']
+d_train = d_train.join(person_dummies_titanic)
+
+
+
 # 決定木の作成
 
 my_tree_one = tree.DecisionTreeClassifier()
@@ -105,6 +113,15 @@ submission.to_csv("submission.csv", index=False)
 PassengerId = np.array(test["PassengerId"]).astype(int) # PassengerId カテゴラルデータ型変換
 my_solution = pd.DataFrame(my_prediction, PassengerId, columns = ["Survived"]) # my_prediction(予測データ）とPassengerIdをデータフレームへ落とし込む
 my_solution.to_csv("my_tree_one.csv", index_label = ["PassengerId"]) # my_tree_one.csvとして書き出し
+
+#
+ex= pd.read_csv("titanic_08_lgb_1.csv")
+d_test_x = pd.read_csv('test.csv')
+d_test_x["Survived"]=ex["Survived"]
+d_test_x.head()
+d_test_x1=d_test_x.ix[:,[0,12,2,3,4,5,6,7,8,9,10,11]]
+d_test_x1.head()
+d_test_x1.to_csv("train_1.csv", index=False)
 
 
 
